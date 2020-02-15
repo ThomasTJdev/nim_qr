@@ -20,6 +20,7 @@ nimble install qr
 git clone https://github.com/ThomasTJdev/nim_qr.git
 cd qr
 gcc -c -o src/qr/include/qrcodegen.o src/qr/include/qrcodegen.c
+# adjust output file for your OS: qrcodegen.(dll|dylib|so)
 gcc -o src/qr/include/qrcodegen.so -shared src/qr/include/qrcodegen.o
 # and then just `import qr`
 ```
