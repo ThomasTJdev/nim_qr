@@ -106,6 +106,7 @@ ____
 
 This is based on [bunkford's qrcodegen package](https://github.com/bunkford/qrcodegen), which is a wrapper for [nayuki's QR-code](https://github.com/nayuki/QR-Code-generator).
 
+The text below is a direct copy'n'paste from nayuki's source file.
 
 
 # Types
@@ -171,13 +172,22 @@ Moreover, the maximum allowed bit length is 32767 because the largest QR Code (v
 ____
 
 
+# Const
+
+Version:
+```nim
+const
+  VERSION_MIN* = 1  ## QR Code Minimum Version
+  VERSION_MAX* = 40 ## QR Code Maximum Version
+```
+
 
 # Procs
 
 ## encodeText*
 
 ```nim
-proc encodeText*(text: cstring; tempBuffer: ptr uint8; qrcode: ptr uint8; ecl: Ecc;
+proc encodeText*(text: cstring; tempBuffer: ptr uint8; qrcode: ptr uint8; ecl: Ecc; minVersion: cint; maxVersion: cint; mask: Mask; boostEcl: bool): bool {.cdecl, importc: "qrcodegen_encodeText", dynlib: libname.}
 ```
 
 Encodes the given text string to a QR Code, returning true if encoding succeeded. If the data is too long to fit in any version in the given range at the given ECC level, then false is returned.
@@ -195,7 +205,7 @@ ____
 ## encodeBinary*
 
 ```nim
-proc encodeBinary*(dataAndTemp: ptr uint8; dataLen: csize; qrcode: ptr uint8;
+proc encodeBinary*(dataAndTemp: ptr uint8; dataLen: csize; qrcode: ptr uint8; ecl: Ecc; minVersion: cint; maxVersion: cint; mask: Mask; boostEcl: bool): bool {.cdecl, importc: "qrcodegen_encodeBinary", dynlib: libname.}
 ```
 
 Encodes the given binary data to a QR Code, returning true if encoding succeeded. If the data is too long to fit in any version in the given range at the given ECC level, then false is returned.
@@ -214,7 +224,7 @@ ____
 ## encodeSegments*
 
 ```nim
-proc encodeSegments*(segs: ptr Segment; len: csize; ecl: Ecc; tempBuffer: ptr uint8;
+proc encodeSegments*(segs: ptr Segment; len: csize; ecl: Ecc; tempBuffer: ptr uint8; qrcode: ptr uint8): bool {.cdecl, importc: "qrcodegen_encodeSegments", dynlib: libname.}
 ```
 
 Renders a QR Code representing the given segments at the given error correction level.
@@ -234,7 +244,7 @@ ____
 ## encodeSegmentsAdvanced*
 
 ```nim
-proc encodeSegmentsAdvanced*(segs: ptr Segment; len: csize; ecl: Ecc; minVersion: cint;
+proc encodeSegmentsAdvanced*(segs: ptr Segment; len: csize; ecl: Ecc; minVersion: cint; maxVersion: cint; mask: Mask; boostEcl: bool; tempBuffer: ptr uint8; qrcode: ptr uint8): bool {. cdecl, importc: "qrcodegen_encodeSegmentsAdvanced", dynlib: libname.}
 ```
 
 Renders a QR Code representing the given segments with the given encoding parameters.
@@ -253,7 +263,7 @@ ____
 ## isAlphanumeric*
 
 ```nim
-proc isAlphanumeric*(text: cstring): bool {.cdecl,
+proc isAlphanumeric*(text: cstring): bool {.cdecl, importc: "qrcodegen_isAlphanumeric", dynlib: libname.}
 ```
 
 Tests whether the given string can be encoded as a segment in alphanumeric mode. A string is encodable iff each character is in the following set: 0 to 9, A to Z (uppercase only), space, dollar, percent, asterisk, plus, hyphen, period, slash, colon.
@@ -264,7 +274,7 @@ ____
 ## isNumeric*
 
 ```nim
-proc isNumeric*(text: cstring): bool {.cdecl, importc: "qrcodegen_isNumeric",
+proc isNumeric*(text: cstring): bool {.cdecl, importc: "qrcodegen_isNumeric", dynlib: libname.}
 ```
 
 Tests whether the given string can be encoded as a segment in numeric mode. A string is encodable iff each character is in the range 0 to 9.
@@ -275,7 +285,7 @@ ____
 ## calcSegmentBufferSize*
 
 ```nim
-proc calcSegmentBufferSize*(mode: Mode; numChars: csize): csize {.cdecl,
+proc calcSegmentBufferSize*(mode: Mode; numChars: csize): csize {.cdecl, importc: "qrcodegen_calcSegmentBufferSize", dynlib: libname.}
 ```
 
 Returns the number of bytes (uint8) needed for the data buffer of a segment containing the given number of characters using the given mode. Notes:
@@ -290,7 +300,7 @@ ____
 ## makeBytes*
 
 ```nim
-proc makeBytes*(data: ptr uint8; len: csize; buf: ptr uint8): Segment {.cdecl,
+proc makeBytes*(data: ptr uint8; len: csize; buf: ptr uint8): Segment {.cdecl, importc: "qrcodegen_makeBytes", dynlib: libname.}
 ```
 
 Returns a segment representing the given binary data encoded in byte mode. All input byte arrays are acceptable. Any text string can be converted to UTF-8 bytes and encoded as a byte mode segment.
@@ -301,7 +311,7 @@ ____
 ## makeNumeric*
 
 ```nim
-proc makeNumeric*(digits: cstring; buf: ptr uint8): Segment {.cdecl,
+proc makeNumeric*(digits: cstring; buf: ptr uint8): Segment {.cdecl, importc: "qrcodegen_makeNumeric", dynlib: libname.}
 ```
 
 Returns a segment representing the given string of decimal digits encoded in numeric mode.
@@ -312,7 +322,7 @@ ____
 ## makeAlphanumeric*
 
 ```nim
-proc makeAlphanumeric*(text: cstring; buf: ptr uint8): Segment {.cdecl,
+proc makeAlphanumeric*(text: cstring; buf: ptr uint8): Segment {.cdecl, importc: "qrcodegen_makeAlphanumeric", dynlib: libname.}
 ```
 
 Returns a segment representing the given text string encoded in alphanumeric mode. The characters allowed are: 0 to 9, A to Z (uppercase only), space, dollar, percent, asterisk, plus, hyphen, period, slash, colon.
@@ -323,7 +333,7 @@ ____
 ## makeEci*
 
 ```nim
-proc makeEci*(assignVal: clong; buf: ptr uint8): Segment {.cdecl,
+proc makeEci*(assignVal: clong; buf: ptr uint8): Segment {.cdecl, importc: "qrcodegen_makeEci", dynlib: libname.}
 ```
 
 Returns a segment representing an Extended Channel Interpretation (ECI) designator with the given assignment value.
@@ -334,7 +344,7 @@ ____
 ## getSize*
 
 ```nim
-proc getSize*(qrcode: ptr uint8): cint {.cdecl, importc: "qrcodegen_getSize",
+proc getSize*(qrcode: ptr uint8): cint {.cdecl, importc: "qrcodegen_getSize", dynlib: libname.}
 ```
 
 Returns the side length of the given QR Code, assuming that encoding succeeded. The result is in the range [21, 177]. Note that the length of the array buffer is related to the side length - every 'uint8 qrcode[]' must have length at least BUFFER_LEN_FOR_VERSION(version), which equals ceil(size^2 / 8 + 1).
@@ -345,7 +355,7 @@ ____
 ## getModule*
 
 ```nim
-proc getModule*(qrcode: ptr uint8; x: cint; y: cint): bool {.cdecl,
+proc getModule*(qrcode: ptr uint8; x: cint; y: cint): bool {.cdecl, importc: "qrcodegen_getModule", dynlib: libname.}
 ```
 
 Returns the color of the module (pixel) at the given coordinates, which is false for white or true for black. The top left corner has the coordinates (x=0, y=0). If the given coordinates are out of bounds, then false (white) is returned.
