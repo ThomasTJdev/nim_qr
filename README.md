@@ -49,7 +49,14 @@ qrSvgFile("https://forum.nim-lang.org", "test.svg")
 proc qrBinary*(data: string, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO): string =
 ```
 
-This returns 1 (black) and 0's (whites) representing the QR code.
+This returns 1 (black) and 0's (whites) representing the QR code. Each row is separated by a newline `\n`.
+
+
+**Example**
+```nim
+  let qr = qrBinary("Hello world")
+  # qr = 1100111101\n101001010\n010101011\n101......
+```
 
 
 ____
@@ -63,6 +70,13 @@ proc qrRow*(data: string, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, ver
 Return a seq[seq[int]] containing the QR-code. 1's is a black field, and 0's is blank field.
 
 
+**Example**
+```nim
+  let qr = qrRow("Hello world")
+  # qr = @[@[0,1,1,0,1....],@[0,0,1,1,1...],@[0,1,1,1,0...
+```
+
+
 ____
 
 ## qrSvgFile*
@@ -73,7 +87,17 @@ proc qrSvgFile*(data, filename: string, size: int32 = 0, border: cint = 0, eccLe
 
 Creates a SVG file for the QR and saves it.
 
-Size should be in pixels.
+The `size` should be in pixels. If set to 0, the optimal size will be used based on the density.
+
+You can set the minimum and maximum size params, `verMin` and `verMax`. You can use values from 1-40.
+
+You only need to define the `data` and a `filename`. Please note there's no error checking when creating the file, you have to that yourself.
+
+
+**Example**
+```nim
+  qrSvgFile("Hello world", "test.svg")
+```
 
 
 ____
@@ -86,7 +110,17 @@ proc qrSvg*(data: string, size: int32 = 0, border: cint = 0, eccLevel = Ecc_Medi
 
 Returns the SVG data
 
-Size should be in pixels.
+The `size` should be in pixels. If set to 0, the optimal size will be used based on the density.
+
+You can set the minimum and maximum size params, `verMin` and `verMax`. You can use values from 1-40.
+
+You only need to define the `data`.
+
+
+**Example**
+```nim
+  let htmlReadySvg = qrSvg("Hello world")
+```
 
 
 ____
@@ -99,24 +133,27 @@ proc qrPrint*(data: string, border: cint = 0, eccLevel = Ecc_Medium, verMin: cin
 
 Prints the QR-code to the console with #'s.
 
-
 ____
 
 
-# Wrapped from C
+# Const
 
-This is based on [bunkford's qrcodegen package](https://github.com/bunkford/qrcodegen), which is a wrapper for [nayuki's QR-code](https://github.com/nayuki/QR-Code-generator).
+Version:
+```nim
+const
+  VERSION_MIN* = 1  ## QR Code Minimum Version
+  VERSION_MAX* = 40 ## QR Code Maximum Version
+```
 
-The text below is a direct copy'n'paste from nayuki's source file.
-
+_____
 
 # Types
 
 ## Ecc* = enum
 
- The error correction level in a QR Code symbol
+The error correction level in a QR Code symbol. `Ecc_MEDIUM` is used as standard.
 
-* __Ecc_LOW = 0__: The QR Code can tolerate about  7% erroneous codewords
+* __Ecc_LOW__: The QR Code can tolerate about  7% erroneous codewords
 
 * __Ecc_MEDIUM__: The QR Code can tolerate about 15% erroneous codewords
 
@@ -135,7 +172,7 @@ ____
 
 ## Mask* = enum
 
- The mask pattern used in a QR Code symbol.
+ The mask pattern used in a QR Code symbol. Mask_AUTO is used as standard.
 
 * __Mask_AUTO__: A special value to tell the QR Code encoder to automatically select an appropriate mask pattern
 
@@ -148,6 +185,16 @@ ____
 
 ____
 
+
+# Wrapped from C
+
+
+The text below is a direct copy'n'paste from [bunkford's qrcodegen package](https://github.com/bunkford/qrcodegen), which is a wrapper for [nayuki's QR-code](https://github.com/nayuki/QR-Code-generator). Therefore, thanks to nayuki for the detailed description.
+
+All the _items_ are available, but please keep in mind, that they use `ptr uint8`, `cint`, `cstring`, etc.
+
+
+# Object
 
 ## Segment* {.bycopy.} = object
 
@@ -171,16 +218,6 @@ Moreover, the maximum allowed bit length is 32767 because the largest QR Code (v
 ```
 
 ____
-
-
-# Const
-
-Version:
-```nim
-const
-  VERSION_MIN* = 1  ## QR Code Minimum Version
-  VERSION_MAX* = 40 ## QR Code Maximum Version
-```
 
 
 # Procs

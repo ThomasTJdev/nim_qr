@@ -9,7 +9,13 @@ include qr/qrcodegen
 
 proc qrBinary*(data: string, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO): string =
   ## This returns 1 (black) and 0's (whites) representing
-  ## the QR code.
+  ## the QR code. Each row is separated by a newline `\n`.
+  ##
+  ## **Example**
+  ## .. code-block::nim
+  ##    let qr = qrBinary("Hello world")
+  ##    # qr = 1100111101\n101001010\n010101011\n101......
+  ##
 
   var
     qrcode: array[BUFFER_LEN_MAX, uint8]
@@ -40,6 +46,12 @@ proc qrBinary*(data: string, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, 
 proc qrRow*(data: string, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO): seq[seq[int]] =
   ## Return a seq[seq[int]] containing the QR-code. 1's is a black field,
   ## and 0's is blank field.
+  ##
+  ## **Example**
+  ## .. code-block::nim
+  ##    let qr = qrRow("Hello world")
+  ##    # qr = @[@[0,1,1,0,1....],@[0,0,1,1,1...],@[0,1,1,1,0...
+  ##
 
   var
     qrcode: array[BUFFER_LEN_MAX, uint8]
@@ -120,7 +132,19 @@ proc qrSvgGenerate(qrcodeData: ptr uint8, svgSize: int32, border: cint): string 
 proc qrSvgFile*(data, filename: string, size: int32 = 0, border: cint = 0, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO) =
   ## Creates a SVG file for the QR and saves it.
   ##
-  ## Size should be in pixels.
+  ## The `size` should be in pixels. If set to 0, the optimal size will be used
+  ## based on the density.
+  ##
+  ## You can set the minimum and maximum size params, `verMin` and `verMax`. You
+  ## can use values from 1-40.
+  ##
+  ## You only need to define the `data` and a `filename`. Please note there's no
+  ## error checking when creating the file, you have to that yourself.
+  ##
+  ## **Example**
+  ## .. code-block::nim
+  ##    qrSvgFile("Hello world", "test.svg")
+  ##
 
   var
     qrcode: array[BUFFER_LEN_MAX, uint8]
@@ -133,7 +157,18 @@ proc qrSvgFile*(data, filename: string, size: int32 = 0, border: cint = 0, eccLe
 proc qrSvg*(data: string, size: int32 = 0, border: cint = 0, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO): string =
   ## Returns the SVG data
   ##
-  ## Size should be in pixels.
+  ## The `size` should be in pixels. If set to 0, the optimal size will be used
+  ## based on the density.
+  ##
+  ## You can set the minimum and maximum size params, `verMin` and `verMax`. You
+  ## can use values from 1-40.
+  ##
+  ## You only need to define the `data`.
+  ##
+  ## **Example**
+  ## .. code-block::nim
+  ##    let htmlReadySvg = qrSvg("Hello world")
+  ##
 
   var
     qrcode: array[BUFFER_LEN_MAX, uint8]
