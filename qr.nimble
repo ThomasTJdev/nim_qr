@@ -11,8 +11,9 @@ srcDir        = "src"
 requires: "nim >= 1.0.6"
 
 task setup, "Generating C-code":
-  exec "gcc -c -o src/qr/include/qrcodegen.o src/qr/include/qrcodegen.c"
+  exec "gcc -c -fPIC -o src/qr/include/qrcodegen.o src/qr/include/qrcodegen.c"
   exec "gcc -o src/qr/include/qrcodegen.so -shared -fPIC src/qr/include/qrcodegen.o"
+  # ERROR: /usr/bin/ld: qrcodegen.o: relocation R_X86_64_PC32 against qrcodegen_encodeSegmentsAdvanced cant be used making shared object; recompile with -fPIC
 
 before install:
   setupTask()
