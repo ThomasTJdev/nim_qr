@@ -104,7 +104,7 @@ proc qrSvgGenerate(qrcodeData: ptr uint8, svgSize: int32, border: cint, fgColor 
 <svg width="$1" height="$1" viewBox="0 0 $1 $1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events">
 <rect x="0" y="0" width="$1" height="$1" fill="$3"/>
 <defs><rect id="p" width="$2" height="$2"/></defs>
-<g fill="$4">""".format(svgSizeCalc, svgItemSize, fgColor, bgColor)
+<g fill="$4">""".format(svgSizeCalc, svgItemSize, bgColor, fgColor)
 
   while y < size + border:
     var x: cint = -border
