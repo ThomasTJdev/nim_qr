@@ -1,5 +1,5 @@
 # Nim QR
-QR-code package for Nim. Create SVG-files with QR-codes from strings.
+QR-code package for Nim. Create SVG and Raster Image files with QR-codes from strings.
 
 The code is based on [bunkford's qrcodegen package](https://github.com/bunkford/qrcodegen), which is a wrapper for [nayuki's QR-code](https://github.com/nayuki/QR-Code-generator).
 
@@ -25,10 +25,10 @@ gcc -o src/qr/include/qrcodegen.so -shared src/qr/include/qrcodegen.o
 # and then just `import qr`
 ```
 
-# Example
+# Examples
 
 Generate a SVG file:
-```
+```nim
 import qr
 
 qrSvgFile("https://forum.nim-lang.org", "test.svg")
@@ -39,6 +39,30 @@ qrSvgFile("https://forum.nim-lang.org", "test.svg")
 
 ![alt text](test.svg "Tot")
 
+
+Generate a Raster Image file:
+```nim
+import qr
+
+qrPbmFile("https://forum.nim-lang.org", "test.pbm")
+# Data:        https://forum.nim-lang.org
+# Output file: test.pbm
+# This uses the standard configuration, e.g. optimal size, mask pattern.
+```
+
+Tiny program that generates SVG QR Codes from the terminal first argument:
+
+```nim
+import os, qr
+qrSvgFile paramStr(1), "output.svg"
+```
+
+Tiny program that generates Image QR Codes from the terminal first argument:
+
+```nim
+import os, qr
+qrPbmFile paramStr(1), "output.pbm"
+```
 
 
 # Nim QR package procs
@@ -82,7 +106,7 @@ ____
 ## qrSvgFile*
 
 ```nim
-proc qrSvgFile*(data, filename: string, size: int32 = 0, border: cint = 0, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO) =
+template qrSvgFile*(data, filename: string, size: int32 = 0, border: cint = 0, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO) =
 ```
 
 Creates a SVG file for the QR and saves it.
@@ -128,10 +152,43 @@ ____
 ## qrPrint*
 
 ```nim
-proc qrPrint*(data: string, border: cint = 0, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO) =
+proc qrPrint*(data: string, border: cint = 0, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO, fgColor = "##", bgColor = "  ") =
 ```
 
-Prints the QR-code to the console with #'s.
+Prints the QR-code to the console with `"#"`'s.
+
+You can customize the character representing the Black & White colors,
+
+`fgColor` is for Foreground Color, `bgColor` is for Background Color.
+
+
+**Example**
+```nim
+  qrPrint("Hello world", fgColor = "⬛", bgColor = "..")
+```
+
+____
+
+## qrPbmFile*
+
+```nim
+template qrPbmFile*(data, filename: string, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO, comment = "") =
+```
+
+Creates a PBM file for the QR and saves it. Format is Monochrome (Black & White), but is really lighweight too.
+
+`comment` is metadata string comment, optional.
+
+The `size` should be in pixels. If set to 0, the optimal size will be used based on the density.
+
+You can set the minimum and maximum size params, `verMin` and `verMax`. You can use values from 1-40.
+
+You only need to define the `data` and a `filename`. Please note there's no error checking when creating the file, you have to that yourself.
+
+**Example**
+```nim
+  qrPbmFile("Hello world", "test.pbm")
+```
 
 ____
 

@@ -1,13 +1,12 @@
 # Copyright 2020 - Thomas T. Jarløv
 
-from strutils import format
+from strutils import format, countLines, splitLines, parseInt
 from os import parentDir
-from strutils import parseInt
 
 include qr/qrcodegen
 
 
-proc qrBinary*(data: string, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO): string =
+func qrBinary*(data: string, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO, fgColor = "1", bgColor = "0"): string =
   ## This returns 1 (black) and 0's (whites) representing
   ## the QR code. Each row is separated by a newline `\n`.
   ##
@@ -16,7 +15,7 @@ proc qrBinary*(data: string, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, 
   ##    let qr = qrBinary("Hello world")
   ##    # qr = 1100111101\n101001010\n010101011\n101......
   ##
-
+  assert fgColor.len > 0 and bgColor.len > 0, "fgColor and bgColor must not be empty string"
   var
     qrcode: array[BUFFER_LEN_MAX, uint8]
     tempBuffer: array[BUFFER_LEN_MAX, uint8]
@@ -34,16 +33,16 @@ proc qrBinary*(data: string, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, 
     var x: cint = -border
     while x < size + border:
       if getModule(addr qrcode[0], x, y):
-        output = output & "1"
+        output = output & fgColor
       else:
-        output = output & "0"
+        output = output & bgColor
       inc(x)
     inc(y)
     output = output & "\n"
   return output
 
 
-proc qrRow*(data: string, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO): seq[seq[int]] =
+func qrRow*(data: string, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO): seq[seq[int]] =
   ## Return a seq[seq[int]] containing the QR-code. 1's is a black field,
   ## and 0's is blank field.
   ##
@@ -81,13 +80,11 @@ proc qrRow*(data: string, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, ver
   return container
 
 
-proc qrSvgGenerate(qrcodeData: ptr uint8, svgSize: int32, border: cint): string =
+proc qrSvgGenerate(qrcodeData: ptr uint8, svgSize: int32, border: cint, fgColor = "#000000", bgColor = "#ffffff"): string =
   ## Generates SVG code for the QR-code.
-
-  const
-    svgTag        = "<use xlink:href='#p' x='$1' y='$2'/>"
-    svgClose      = "</g></svg>"
-
+  assert fgColor.len in [4, 7] and fgColor[0] == '#', "fgColor must be 4 or 7 chars Hexadecimal Color string"
+  assert bgColor.len in [4, 7] and bgColor[0] == '#', "bgColor must be 4 or 7 chars Hexadecimal Color string"
+  const svgClose = "</g></svg>"
   var
     qrcode: array[BUFFER_LEN_MAX, uint8]
     tempBuffer: array[BUFFER_LEN_MAX, uint8]
@@ -105,9 +102,9 @@ proc qrSvgGenerate(qrcodeData: ptr uint8, svgSize: int32, border: cint): string 
     svgItemSize   = svgSizeFinal / size
     svgOpen       = """<?xml version="1.0" encoding="utf-8"?>
 <svg width="$1" height="$1" viewBox="0 0 $1 $1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events">
-<rect x="0" y="0" width="$1" height="$1" fill="#ffffff"/>
+<rect x="0" y="0" width="$1" height="$1" fill="$3"/>
 <defs><rect id="p" width="$2" height="$2"/></defs>
-<g fill="#000000">""".format(svgSizeCalc, svgItemSize)
+<g fill="$4">""".format(svgSizeCalc, svgItemSize, bgColor, fgColor)
 
   while y < size + border:
     var x: cint = -border
@@ -116,7 +113,7 @@ proc qrSvgGenerate(qrcodeData: ptr uint8, svgSize: int32, border: cint): string 
     while x < size + border:
 
       if getModule(qrcodeData, x, y):
-        output.add(svgTag.format(svgX, svgY))
+        output.add("<use xlink:href='#p' x='" & $svgX & "' y='" & $svgY & "'/>")
       else:
         discard
 
@@ -129,7 +126,25 @@ proc qrSvgGenerate(qrcodeData: ptr uint8, svgSize: int32, border: cint): string 
   return svgOpen & output & svgClose
 
 
-proc qrSvgFile*(data, filename: string, size: int32 = 0, border: cint = 0, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO) =
+proc qrPbmGenerate*(data: string, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO, comment = ""): string =
+  ## Generates NetPBM PBM Raster Bitmap Image code for the QR-code. https://en.wikipedia.org/wiki/Netpbm_format#PPM_example
+  let
+    bitmap = qrBinary(data, eccLevel, verMin, verMax, mask, fgColor = "1 ", bgColor = "0 ")
+    width = bitmap.splitLines[0].len div 2  # width is (len of line0 / 2) because half are spaces.
+    height = bitmap.countLines - 1          # height is countLines.
+  result = (  # I bet you never knew making Raster Images was so easy uh?.
+    "P1\n"                 &          # Header (standard).
+    "# " & comment         & "\n" &   # Comments, metadata, arbitrary string.
+    $width & " " & $height & "\n\n" & # Width Height (int).
+                                      # Max Value, must be empty line in this format.
+    bitmap)                           # Matrix (1 or 0), 1 black, 0 white.
+
+
+template qrPbmFile*(data, filename: string, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO, comment = "") =
+  writeFile(filename, qrPbmGenerate(data, eccLevel, verMin, verMax, mask, comment)) # File extension must be .pbm
+
+
+template qrSvgFile*(data, filename: string, size: int32 = 0, border: cint = 0, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO) =
   ## Creates a SVG file for the QR and saves it.
   ##
   ## The `size` should be in pixels. If set to 0, the optimal size will be used
@@ -154,7 +169,7 @@ proc qrSvgFile*(data, filename: string, size: int32 = 0, border: cint = 0, eccLe
     writeFile(filename, qrSvgGenerate(addr qrcode[0], size, border))
 
 
-proc qrSvg*(data: string, size: int32 = 0, border: cint = 0, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO): string =
+func qrSvg*(data: string, size: int32 = 0, border: cint = 0, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO): string =
   ## Returns the SVG data
   ##
   ## The `size` should be in pixels. If set to 0, the optimal size will be used
@@ -178,9 +193,9 @@ proc qrSvg*(data: string, size: int32 = 0, border: cint = 0, eccLevel = Ecc_Medi
     return qrSvgGenerate(addr qrcode[0], size, border)
 
 
-proc qrPrint*(data: string, border: cint = 0, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO) =
+proc qrPrint*(data: string, border: cint = 0, eccLevel = Ecc_Medium, verMin: cint = VERSION_MIN, verMax: cint = VERSION_MAX, mask = Mask_AUTO, fgColor = "##", bgColor = "  ") =
   ## Prints the QR-code to the console with #'s.
-
+  assert fgColor.len > 0 and bgColor.len > 0, "fgColor and bgColor must not be empty string"
   var
     qrcode: array[BUFFER_LEN_MAX, uint8]
     tempBuffer: array[BUFFER_LEN_MAX, uint8]
@@ -189,7 +204,7 @@ proc qrPrint*(data: string, border: cint = 0, eccLevel = Ecc_Medium, verMin: cin
     return
 
   var
-    output:string
+    output: string
     size: cint = getSize(addr qrcode[0])
     border: cint = border
     y: cint = -border
@@ -198,13 +213,11 @@ proc qrPrint*(data: string, border: cint = 0, eccLevel = Ecc_Medium, verMin: cin
     var x: cint = -border
     while x < size + border:
       if getModule(addr qrcode[0], x, y):
-        output = output & "##"
+        output = output & fgColor
       else:
-        output = output & "  "
+        output = output & bgColor
       inc(x)
     output = output & "\n"
     inc(y)
-  output = output
+
   echo output
-
-
