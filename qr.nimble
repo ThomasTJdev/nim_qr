@@ -8,7 +8,7 @@ srcDir        = "src"
 
 # Dependencies
 
-requires: "nim >= 1.0.6"
+requires: "nim >= 1.4.0"
 
 task setup, "Generating C-code":
   exec "gcc -c -fPIC -o src/qr/include/qrcodegen.o src/qr/include/qrcodegen.c"
