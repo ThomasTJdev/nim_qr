@@ -164,7 +164,7 @@ proc encodeText*(text: cstring; tempBuffer: ptr uint8; qrcode: ptr uint8; ecl: E
   ##  - Please consult the QR Code specification for information on
   ##    data capacities per version, ECC level, and text encoding mode.
 
-proc encodeBinary*(dataAndTemp: ptr uint8; dataLen: csize; qrcode: ptr uint8;
+proc encodeBinary*(dataAndTemp: ptr uint8; dataLen: csize_t; qrcode: ptr uint8;
                   ecl: Ecc; minVersion: cint; maxVersion: cint; mask: Mask;
                   boostEcl: bool): bool {.cdecl, importc: "qrcodegen_encodeBinary",
                                        dynlib: libname.}
@@ -189,7 +189,7 @@ proc encodeBinary*(dataAndTemp: ptr uint8; dataLen: csize; qrcode: ptr uint8;
 
 
 
-proc encodeSegments*(segs: ptr Segment; len: csize; ecl: Ecc; tempBuffer: ptr uint8;
+proc encodeSegments*(segs: ptr Segment; len: csize_t; ecl: Ecc; tempBuffer: ptr uint8;
                     qrcode: ptr uint8): bool {.cdecl,
     importc: "qrcodegen_encodeSegments", dynlib: libname.}
   ##  Renders a QR Code representing the given segments at the given error correction level.
@@ -203,7 +203,7 @@ proc encodeSegments*(segs: ptr Segment; len: csize; ecl: Ecc; tempBuffer: ptr ui
   ##  result in them being clobbered, but the QR Code output will still be correct.
   ##  But the qrcode array must not overlap tempBuffer or any segment's data buffer.
 
-proc encodeSegmentsAdvanced*(segs: ptr Segment; len: csize; ecl: Ecc; minVersion: cint;
+proc encodeSegmentsAdvanced*(segs: ptr Segment; len: csize_t; ecl: Ecc; minVersion: cint;
                             maxVersion: cint; mask: Mask; boostEcl: bool;
                             tempBuffer: ptr uint8; qrcode: ptr uint8): bool {.
     cdecl, importc: "qrcodegen_encodeSegmentsAdvanced", dynlib: libname.}
@@ -236,7 +236,7 @@ proc isNumeric*(text: cstring): bool {.cdecl, importc: "qrcodegen_isNumeric",
 
 
 
-proc calcSegmentBufferSize*(mode: Mode; numChars: csize): csize {.cdecl,
+proc calcSegmentBufferSize*(mode: Mode; numChars: csize_t): csize_t {.cdecl,
     importc: "qrcodegen_calcSegmentBufferSize", dynlib: libname.}
   ##  Returns the number of bytes (uint8) needed for the data buffer of a segment
   ##  containing the given number of characters using the given mode. Notes:
@@ -248,7 +248,7 @@ proc calcSegmentBufferSize*(mode: Mode; numChars: csize): csize {.cdecl,
   ##  - For ECI mode, numChars must be 0, and the worst-case number of bytes is returned.
   ##    An actual ECI segment can have shorter data. For non-ECI modes, the result is exact.
 
-proc makeBytes*(data: ptr uint8; len: csize; buf: ptr uint8): Segment {.cdecl,
+proc makeBytes*(data: ptr uint8; len: csize_t; buf: ptr uint8): Segment {.cdecl,
     importc: "qrcodegen_makeBytes", dynlib: libname.}
   ##  Returns a segment representing the given binary data encoded in
   ##  byte mode. All input byte arrays are acceptable. Any text string
@@ -285,7 +285,3 @@ proc getModule*(qrcode: ptr uint8; x: cint; y: cint): bool {.cdecl,
   ##  Returns the color of the module (pixel) at the given coordinates, which is false
   ##  for white or true for black. The top left corner has the coordinates (x=0, y=0).
   ##  If the given coordinates are out of bounds, then false (white) is returned.
-
-
-
-
