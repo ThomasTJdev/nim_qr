@@ -54,19 +54,10 @@
 
 import os
 
+const libname* {.strdefine.} = currentSourcePath().parentDir / "qrcodegen." & (when defined(windows): "dll" elif defined(macosx): "dylib" else: "so") ## Dynamic Library
 
-{.deadCodeElim: on.}
-when defined(windows):
-  const
-    libname* = currentSourcePath().parentDir() & "/include/qrcodegen.dll" ## Dynamic Library
-elif defined(macosx):
-  const
-    libname* = currentSourcePath().parentDir() & "/include/qrcodegen.dylib" ## Dynamic Library
-else:
-  const
-    libname* = currentSourcePath().parentDir() & "/include/qrcodegen.so" ## Dynamic Library
+{.passl: libname.}
 
-{.passL: libname.}
 
 # ---- Enum and struct types----
 
