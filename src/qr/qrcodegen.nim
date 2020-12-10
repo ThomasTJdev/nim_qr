@@ -54,7 +54,13 @@
 
 import os
 
-const libname* {.strdefine.} = currentSourcePath().parentDir / "qrcodegen." & (when defined(windows): "dll" elif defined(macosx): "dylib" else: "so") ## Dynamic Library
+
+# You can use this if the other location fails for some reason. See qr.nimble
+# const libname* = currentSourcePath().parentDir / "qrcodegen." & (when defined(windows): "dll" elif defined(macosx): "dylib" else: "so") ## Dynamic Library
+
+const libname* = (when defined(windows): "C:\\Windows\\System32" else: "/usr/lib") /
+  "qrcodegen." & (when defined(windows): "dll" elif defined(macosx): "dylib" else: "so") ## Dynamic Library
+
 
 {.passl: libname.}
 
