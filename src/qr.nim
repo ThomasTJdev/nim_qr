@@ -97,7 +97,7 @@ func qrSvgGenerate(qrcodeData: ptr uint8, svgSize: int32, border: cint, fgColor:
 
   while y < size + border:
     var x: cint = -border
-    svgY = 0
+    svgX = 0
 
     while x < size + border:
 
@@ -105,10 +105,10 @@ func qrSvgGenerate(qrcodeData: ptr uint8, svgSize: int32, border: cint, fgColor:
         output.add("<use xlink:href='#p' x='" & $svgX.int & "' y='" & $svgY.int & "'/>")
 
       inc(x)
-      svgY += svgItemSize
+      svgX += svgItemSize
 
     inc(y)
-    svgX += svgItemSize
+    svgY += svgItemSize
 
   # bgColor and fgColor is formatted at compile-time. Sizes and data is formatted at run-time.
   result = static("""<?xml version="1.0" encoding="utf-8"?><svg width="$$1" height="$$1" viewBox="0 0 $$1 $$1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"><rect x="0" y="0" width="$$1" height="$$1" fill="$1"/><defs><rect id="p" width="$$2" height="$$2"/></defs><g fill="$2">$$3</g></svg>""" % [bgColor, fgColor]
