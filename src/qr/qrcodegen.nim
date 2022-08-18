@@ -55,14 +55,7 @@
 import os
 
 
-# You can use this if the other location fails for some reason. See qr.nimble
-# const libname* = currentSourcePath().parentDir / "qrcodegen." & (when defined(windows): "dll" elif defined(macosx): "dylib" else: "so") ## Dynamic Library
-
-const libname* = (when defined(windows): "C:\\Windows\\System32" else: "/usr/lib") /
-  "qrcodegen." & (when defined(windows): "dll" elif defined(macosx): "dylib" else: "so") ## Dynamic Library
-
-
-{.passl: libname.}
+{.compile: "qrcodegen.c".}
 
 
 # ---- Enum and struct types----
@@ -142,7 +135,7 @@ const
 
 proc encodeText*(text: cstring; tempBuffer: ptr uint8; qrcode: ptr uint8; ecl: Ecc;
                 minVersion: cint; maxVersion: cint; mask: Mask; boostEcl: bool): bool {.
-    cdecl, importc: "qrcodegen_encodeText", dynlib: libname.}
+    cdecl, importc: "qrcodegen_encodeText".}
   ##  Encodes the given text string to a QR Code, returning true if encoding succeeded.
   ##  If the data is too long to fit in any version in the given range
   ##  at the given ECC level, then false is returned.
@@ -163,8 +156,7 @@ proc encodeText*(text: cstring; tempBuffer: ptr uint8; qrcode: ptr uint8; ecl: E
 
 proc encodeBinary*(dataAndTemp: ptr uint8; dataLen: csize_t; qrcode: ptr uint8;
                   ecl: Ecc; minVersion: cint; maxVersion: cint; mask: Mask;
-                  boostEcl: bool): bool {.cdecl, importc: "qrcodegen_encodeBinary",
-                                       dynlib: libname.}
+                  boostEcl: bool): bool {.cdecl, importc: "qrcodegen_encodeBinary".}
   ##  Encodes the given binary data to a QR Code, returning true if encoding succeeded.
   ##  If the data is too long to fit in any version in the given range
   ##  at the given ECC level, then false is returned.
@@ -188,7 +180,7 @@ proc encodeBinary*(dataAndTemp: ptr uint8; dataLen: csize_t; qrcode: ptr uint8;
 
 proc encodeSegments*(segs: ptr Segment; len: csize_t; ecl: Ecc; tempBuffer: ptr uint8;
                     qrcode: ptr uint8): bool {.cdecl,
-    importc: "qrcodegen_encodeSegments", dynlib: libname.}
+    importc: "qrcodegen_encodeSegments".}
   ##  Renders a QR Code representing the given segments at the given error correction level.
   ##  The smallest possible QR Code version is automatically chosen for the output. Returns true if
   ##  QR Code creation succeeded, or false if the data is too long to fit in any version. The ECC level
@@ -203,7 +195,7 @@ proc encodeSegments*(segs: ptr Segment; len: csize_t; ecl: Ecc; tempBuffer: ptr 
 proc encodeSegmentsAdvanced*(segs: ptr Segment; len: csize_t; ecl: Ecc; minVersion: cint;
                             maxVersion: cint; mask: Mask; boostEcl: bool;
                             tempBuffer: ptr uint8; qrcode: ptr uint8): bool {.
-    cdecl, importc: "qrcodegen_encodeSegmentsAdvanced", dynlib: libname.}
+    cdecl, importc: "qrcodegen_encodeSegmentsAdvanced".}
   ##  Renders a QR Code representing the given segments with the given encoding parameters.
   ##  Returns true if QR Code creation succeeded, or false if the data is too long to fit in the range of versions.
   ##  The smallest possible QR Code version within the given range is automatically
@@ -220,21 +212,19 @@ proc encodeSegmentsAdvanced*(segs: ptr Segment; len: csize_t; ecl: Ecc; minVersi
 
 
 proc isAlphanumeric*(text: cstring): bool {.cdecl,
-                                        importc: "qrcodegen_isAlphanumeric",
-                                        dynlib: libname.}
+                                        importc: "qrcodegen_isAlphanumeric".}
   ##  Tests whether the given string can be encoded as a segment in alphanumeric mode.
   ##  A string is encodable iff each character is in the following set: 0 to 9, A to Z
   ##  (uppercase only), space, dollar, percent, asterisk, plus, hyphen, period, slash, colon.
 
-proc isNumeric*(text: cstring): bool {.cdecl, importc: "qrcodegen_isNumeric",
-                                   dynlib: libname.}
+proc isNumeric*(text: cstring): bool {.cdecl, importc: "qrcodegen_isNumeric".}
   ##  Tests whether the given string can be encoded as a segment in numeric mode.
   ##  A string is encodable iff each character is in the range 0 to 9.
 
 
 
 proc calcSegmentBufferSize*(mode: Mode; numChars: csize_t): csize_t {.cdecl,
-    importc: "qrcodegen_calcSegmentBufferSize", dynlib: libname.}
+    importc: "qrcodegen_calcSegmentBufferSize".}
   ##  Returns the number of bytes (uint8) needed for the data buffer of a segment
   ##  containing the given number of characters using the given mode. Notes:
   ##  - Returns SIZE_MAX on failure, i.e. numChars > INT16_MAX or
@@ -246,23 +236,23 @@ proc calcSegmentBufferSize*(mode: Mode; numChars: csize_t): csize_t {.cdecl,
   ##    An actual ECI segment can have shorter data. For non-ECI modes, the result is exact.
 
 proc makeBytes*(data: ptr uint8; len: csize_t; buf: ptr uint8): Segment {.cdecl,
-    importc: "qrcodegen_makeBytes", dynlib: libname.}
+    importc: "qrcodegen_makeBytes".}
   ##  Returns a segment representing the given binary data encoded in
   ##  byte mode. All input byte arrays are acceptable. Any text string
   ##  can be converted to UTF-8 bytes and encoded as a byte mode segment.
 
 proc makeNumeric*(digits: cstring; buf: ptr uint8): Segment {.cdecl,
-    importc: "qrcodegen_makeNumeric", dynlib: libname.}
+    importc: "qrcodegen_makeNumeric".}
   ##  Returns a segment representing the given string of decimal digits encoded in numeric mode.
 
 proc makeAlphanumeric*(text: cstring; buf: ptr uint8): Segment {.cdecl,
-    importc: "qrcodegen_makeAlphanumeric", dynlib: libname.}
+    importc: "qrcodegen_makeAlphanumeric".}
   ##  Returns a segment representing the given text string encoded in alphanumeric mode.
   ##  The characters allowed are: 0 to 9, A to Z (uppercase only), space,
   ##  dollar, percent, asterisk, plus, hyphen, period, slash, colon.
 
 proc makeEci*(assignVal: clong; buf: ptr uint8): Segment {.cdecl,
-    importc: "qrcodegen_makeEci", dynlib: libname.}
+    importc: "qrcodegen_makeEci".}
   ##  Returns a segment representing an Extended Channel Interpretation
   ##  (ECI) designator with the given assignment value.
 
@@ -270,15 +260,14 @@ proc makeEci*(assignVal: clong; buf: ptr uint8): Segment {.cdecl,
 
 
 
-proc getSize*(qrcode: ptr uint8): cint {.cdecl, importc: "qrcodegen_getSize",
-                                      dynlib: libname.}
+proc getSize*(qrcode: ptr uint8): cint {.cdecl, importc: "qrcodegen_getSize".}
   ##  Returns the side length of the given QR Code, assuming that encoding succeeded.
   ##  The result is in the range [21, 177]. Note that the length of the array buffer
   ##  is related to the side length - every 'uint8 qrcode[]' must have length at least
   ##  BUFFER_LEN_FOR_VERSION(version), which equals ceil(size^2 / 8 + 1).
 
 proc getModule*(qrcode: ptr uint8; x: cint; y: cint): bool {.cdecl,
-    importc: "qrcodegen_getModule", dynlib: libname.}
+    importc: "qrcodegen_getModule".}
   ##  Returns the color of the module (pixel) at the given coordinates, which is false
   ##  for white or true for black. The top left corner has the coordinates (x=0, y=0).
   ##  If the given coordinates are out of bounds, then false (white) is returned.
