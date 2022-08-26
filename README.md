@@ -6,29 +6,18 @@ The code is based on [bunkford's qrcodegen package](https://github.com/bunkford/
 
 # Install
 
-Install this package with nimble or manually. Remember to place the shared
-library in you library-folder.
-
 ## Nimble
 
 ```
 nimble install qr
 # and then just `import qr`
-#
-# The installation process will try to copy the required shared library
-# `qrcodegen.so` to your library folder. This would probably fail due
-# missing rights, and you shouldn't run `nimble` with `sudo`. Just follow
-# the output on the screen and copy the file. For linux:
-cp src/qr/qrcodegen.so /usr/lib/qrcodegen.so
 ```
 
 ## Manually
 ```
 git clone https://github.com/ThomasTJdev/nim_qr.git
 cd qr
-gcc -c -o src/qr/include/qrcodegen.o src/qr/include/qrcodegen.c
-# adjust output file for your OS: qrcodegen.(dll|dylib|so)
-gcc -o /usr/lib/qrcodegen.so -shared src/qr/include/qrcodegen.o
+nimble install
 # and then just `import qr`
 ```
 
